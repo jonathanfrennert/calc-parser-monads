@@ -1,4 +1,4 @@
-<img src="https://github.com/J0HNN7G/LogiLang/blob/master/doc/Icon.png" width="155" height="110">
+<img src="https://github.com/J0HNN7G/LogiLan/blob/master/doc/Icon.png" width="155" height="110">
 
 # LogiLan
 - A toy functional language to show the Curry-Howard isomorphism.
