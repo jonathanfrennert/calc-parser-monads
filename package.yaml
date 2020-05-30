@@ -1,0 +1,48 @@
+name:                LogiLan
+version:             0.1.0.0
+github:              "J0HNN7G/LogiLan"
+license:             BSD3
+author:              "Jonathan Gustafsson Frennert"
+maintainer:          "jonathan.frennert@gmail.com"
+copyright:           "(c) 2020 Jonathan Gustafsson Frennert"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Logic
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/J0HNN7G/LogiLan#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+
+executables:
+  LogiLan-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - LogiLan
+
+tests:
+  LogiLan-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - LogiLan
