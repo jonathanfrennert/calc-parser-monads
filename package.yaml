@@ -11,7 +11,7 @@ extra-source-files:
 - ChangeLog.md
 
 # Metadata used when publishing your package
-# synopsis:            Short description of your package
+# synopsis:            A toy functional programming language made to explore the Curry-Howard isomorphism.
 # category:            Logic
 
 # To avoid duplicated efforts in documentation and dealing with the

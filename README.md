@@ -1,8 +1,10 @@
-<img src="https://github.com/J0HNN7G/LogiLang/blob/master/doc/Icon.png" width="155" height="110">
+<img src="https://github.com/J0HNN7G/LogiLan/blob/master/doc/Icon.png" width="155" height="110">
 
 # LogiLan
 - A toy functional language to show the Curry-Howard isomorphism.
-- Type expressions are formulated as intuitionistic propositional logic (IPL) and a IPL theorem prover is applied. Finally, a proof tree is expressed.
+- The function `prove` takes any logiLan function as input and will rewrite the function's type expression as intuitionistic propositional logic (IPL). Finally, the corresponding proof tree is shown in the command-line. 
+- `prove` shows a direct link between computer programs (functional programming) and mathematical proofs (intuitionistic logic), i.e., the Curry-Howard isomorphism.
+- Given that `prove` may be used on falsifiable functions, the compiler will ignore the given function if it is a parameter for `prove`. However, if a falsifiable (and thereby erroneous) function is applied anywhere else, you will get a compile-time error. 
 
 ### Documentation
 
