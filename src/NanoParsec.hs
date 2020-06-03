@@ -32,7 +32,15 @@ item = Parser $ \s ->
     []     -> []
     (c:cs) -> [(c,cs)]
 
------------------------------- Parser Monad ------------------------------
+------------------------------ Helper functions ------------------------------
+
+satisfy :: (Char -> Bool) -> Parser Char
+satisfy a = item >>= \c ->
+  if a c
+  then return c
+  else failure
+
+------------------------------ Monad Functions ------------------------------
 
 -- | Inject a single pure value as the result.
 unit :: a           -- ^ Pure value
@@ -45,7 +53,7 @@ bind :: Parser a          -- ^ Parser with the first operation
      -> Parser b
 bind p q = Parser $ \s -> concatMap (\(a, s') -> parse (q a) s') $ parse p s
 
--- | Create an empty list.
+-- | An empty list is the failure state for the parse operation.
 failure :: Parser a
 failure = Parser (\s -> [])
 
@@ -64,6 +72,8 @@ combine :: Parser a   -- ^ Parser whose operation is first in the result
         -> Parser a   -- ^ Parser whose operation is second in the result
         -> Parser a
 combine p q = Parser (\s -> parse p s ++ parse q s)
+
+------------------------------ Monad Instances ------------------------------
 
 instance Monad Parser where
   return = unit
