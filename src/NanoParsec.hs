@@ -65,9 +65,6 @@ combine :: Parser a   -- ^ Parser whose operation is first in the result
         -> Parser a
 combine p q = Parser (\s -> parse p s ++ parse q s)
 
--- |
--- * The identity operation is 'unit'.
--- * The binary associative binary operation is 'bind'.
 instance Monad Parser where
   return = unit
   (>>=)  = bind
@@ -76,25 +73,17 @@ instance Monad Parser where
 instance Functor Parser where
   fmap f p = p >>= return . f
 
--- |
--- * The identity operation is 'return'.
--- * The binary associative operation applies the LHS parser operation to the
--- the RHS parser operation and retains only the RHS stream.
+-- | (`<*>`) The binary associative operation applies the LHS parser operation
+-- to the the RHS parser operation and retains only the RHS stream.
 instance Applicative Parser where
   pure                          = return
   (Parser op1) <*> (Parser op2) = Parser (\s1 -> [(f a, s3) | (f, s2) <- op1 s1,
                                                               (a, s3) <- op2 s2])
 
--- |
--- * The identity operation is 'failure'.
--- * The binary associative operation is 'option'.
 instance Alternative Parser where
   empty = failure
   (<|>) = option
 
--- |
--- * The identity operation is 'empty'
--- * The binary associative operation is 'combine'
 instance MonadPlus Parser where
   mzero = empty
   mplus = combine
