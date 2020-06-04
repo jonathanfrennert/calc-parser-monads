@@ -1,6 +1,10 @@
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 
-module NanoParsec where
+module NanoParsec (
+Expr (..),
+run,
+eval,
+) where
 
 import Data.Char
 import Control.Monad
@@ -8,31 +12,118 @@ import Control.Applicative
 
 ------------------------------ Parser ------------------------------
 
--- | The Parser takes a character stream and yields a parse tree.
-newtype Parser a = Parser { parse :: String           -- ^ Input for parser
-                                  -> [(a, String)]
-                          }
+newtype Parser a = Parser { parse :: String -> [(a, String)]}
 
--- | Running the parser on a character stream yields the parse tree, or if the
--- stream could not be consumed, an error is thrown.
-runParser :: Parser a   -- ^ Parser to run
-          -> String     -- ^ Input for parser
-          -> a
+runParser :: Parser a -> String -> a
 runParser p s =
   case p `parse` s of
     [(result, [])]  -> result
     [(_, leftover)] -> error "Parser did not consume entire stream."
     _               -> error "Parser Error."
 
--- | Extract a single character from the parser stream and return a tuple
--- containing itself and the rest of the stream.
 item :: Parser Char
 item = Parser $ \s ->
   case s of
     []     -> []
     (c:cs) -> [(c,cs)]
 
------------------------------- Helper functions ------------------------------
+-- | Left-recurse on the stream until failure.
+chainl :: Parser a -> Parser (a -> a -> a) -> a -> Parser a
+chainl p op a = (p `chainl1` op) <|> return a
+
+chainl1 :: Parser a -> Parser (a -> a -> a) -> Parser a
+p `chainl1` op = do {a <- p; rest a}
+  where rest a = (do f <- op
+                     b <- p
+                     rest (f a b))
+                 <|> return a
+
+------------------------------ Combinators ------------------------------
+
+data Expr
+  = Add Expr Expr
+  | Mul Expr Expr
+  | Sub Expr Expr
+  | Lit Int
+  deriving Show
+
+run :: String -> Expr
+run = runParser expr
+
+eval :: Expr -> Int
+eval ex = case ex of
+  Add a b -> eval a + eval b
+  Mul a b -> eval a * eval b
+  Sub a b -> eval a - eval b
+  Lit n   -> n
+
+expr :: Parser Expr
+expr = term `chainl1` addop
+
+term :: Parser Expr
+term = factor `chainl1` mulop
+
+int :: Parser Expr
+int = do
+  n <- number
+  return (Lit n)
+
+factor :: Parser Expr
+factor = int <|> parens expr
+
+infixOp :: String -> (a -> a -> a) -> Parser (a -> a -> a)
+infixOp x f = reserved x >> return f
+
+addop :: Parser (Expr -> Expr -> Expr)
+addop = (infixOp "+" Add) <|> (infixOp "-" Sub)
+
+mulop :: Parser (Expr -> Expr -> Expr)
+mulop = infixOp "*" Mul
+
+------------------------------ Combinators ------------------------------
+
+char :: Char -> Parser Char
+char c = satisfy (c ==)
+
+string :: String -> Parser String
+string []     = return []
+string (c:cs) = do
+  char c
+  string cs
+  return (c:cs)
+
+spaces :: Parser String
+spaces = many $ oneOf " \n\r"
+
+token :: Parser a -> Parser a
+token p = do
+  a <- p
+  spaces
+  return a
+
+reserved :: String -> Parser String
+reserved s = token (string s)
+
+parens :: Parser a -> Parser a
+parens m = do
+  reserved "("
+  n <- m
+  reserved ")"
+  return n
+
+digit :: Parser Char
+digit = satisfy isDigit
+
+natural :: Parser Integer
+natural = read <$> some (satisfy isDigit)
+
+number :: Parser Int
+number = do
+  s <- string "-" <|> return []
+  cs <- some digit
+  return $ read (s ++ cs)
+
+------------------------------ Combinator helpers ------------------------------
 
 satisfy :: (Char -> Bool) -> Parser Char
 satisfy a = item >>= \c ->
@@ -40,7 +131,10 @@ satisfy a = item >>= \c ->
   then return c
   else failure
 
------------------------------- Monad Functions ------------------------------
+oneOf :: [Char] -> Parser Char
+oneOf s = satisfy (flip elem s)
+
+------------------------------ Parser Monad ------------------------------
 
 -- | Inject a single pure value as the result.
 unit :: a           -- ^ Pure value
@@ -53,27 +147,23 @@ bind :: Parser a          -- ^ Parser with the first operation
      -> Parser b
 bind p q = Parser $ \s -> concatMap (\(a, s') -> parse (q a) s') $ parse p s
 
--- | An empty list is the failure state for the parse operation.
 failure :: Parser a
 failure = Parser (\s -> [])
 
--- | Choose between two parser operations, switching to the second operation if
--- the first operation results in a 'failure'.
-option :: Parser a    -- ^ Parser with the first operation
-       -> Parser a    -- ^ Parser with the second operation
+option :: Parser a    -- ^ First option parser
+       -> Parser a    -- ^ Second option parser
        -> Parser a
 option  p q = Parser $ \s ->
   case parse p s of
     []  -> parse q s
-    res -> res
+    result -> result
 
--- | Apply two parser operations over the same stream and concatenate the result.
 combine :: Parser a   -- ^ Parser whose operation is first in the result
         -> Parser a   -- ^ Parser whose operation is second in the result
         -> Parser a
 combine p q = Parser (\s -> parse p s ++ parse q s)
 
------------------------------- Monad Instances ------------------------------
+------------------------------ Parser Monad Instances ------------------------------
 
 instance Monad Parser where
   return = unit

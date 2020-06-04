@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3164228aef23bae045530bd6aa07144c7a099f6257295de4cf00e30c43d215f0
+-- hash: cd1b0bd5409e8d7f00fb2e8acacf236aab78105a50a89a57cc218b4270c2693c
 
 name:           LogiLan
 version:        0.1.0.0
@@ -27,7 +27,6 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
       NanoParsec
   other-modules:
       Paths_LogiLan
