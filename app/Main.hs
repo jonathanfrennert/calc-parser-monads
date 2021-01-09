@@ -8,5 +8,5 @@ main :: IO ()
 main = forever $ do
   putStr "> "
   hFlush stdout
-  str <- getLine
-  print $ eval $ run str
+  line <- getLine
+  print $ eval $ run line
