@@ -1,5 +1,3 @@
-<img src="https://github.com/J0HNN7G/LogiLan/blob/master/doc/Icon.png" width="155" height="110">
-
 # LogiLan
 - Toy language to learn about parser monads.
 
